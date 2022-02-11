@@ -18,6 +18,18 @@ def on_browse(variables):
 
 def on_start(variables):
     try:
+        if 'RIOT_CLIENT_SERVICES' not in os.environ:
+            logger.error('RIOT_CLIENT_SERVICES value not set in .env file.')
+            return
+        if not os.path.isfile(os.environ.get('RIOT_CLIENT_SERVICES')):
+            logger.error('FileNotFound. Set a valid RIOT_CLIENT_SERVICES file path in .env file.')
+            return
+        if 'LEAGUE_CLIENT' not in os.environ:
+            logger.error('LEAGUE_CLIENT value not set in .env file.')
+            return
+        if not os.path.isfile(os.environ.get('LEAGUE_CLIENT')):
+            logger.error('FileNotFound. Set a valid LEAGUE_CLIENT file path in .env file.')
+            return
         input_path = variables['input_path'].get()
         if input_path == '':
             logger.error('Input file is empty.')
