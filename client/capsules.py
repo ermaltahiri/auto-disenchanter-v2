@@ -8,7 +8,7 @@ from .loot import get_loot
 capsule_re = 'CHEST_((?!(generic|224|champion_mastery)).)*'
 
 
-def open_champion_capsules(connection, retry_limit=1):
+def open_champion_capsules(connection, retry_limit=10):
     logger.info('Opening all champion capsules...')
     for _ in range(retry_limit):
         try:

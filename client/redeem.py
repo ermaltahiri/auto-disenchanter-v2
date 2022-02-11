@@ -3,14 +3,14 @@ import time
 from .exceptions import LootRetrieveException
 from .logger import logger
 from .loot import get_loot
+from .recipes import post_recipe
 
 
-def post_redeem(connection, array):
-    for loot in array:
-        desc = loot['itemDesc']
-        count = loot['count']
-        logger.info(f'Redeeming: {desc}, Count: {count}')
-        connection.post('/lol-loot/v1/player-loot/%s/redeem' % loot['lootName'])
+def post_redeem(connection, loot):
+    desc = loot['itemDesc']
+    count = loot['count']
+    logger.info(f'Redeeming: {desc}, Count: {count}')
+    connection.post('/lol-loot/v1/player-loot/%s/redeem' % loot['lootName'])
 
 
 def redeem(connection, value, type, status):
@@ -28,7 +28,12 @@ def redeem(connection, value, type, status):
         ]
         if loot_result == []:
             return
-        post_redeem(connection, loot_result)
+        for loot in loot_result:
+            if value == 0:
+                post_redeem(connection, loot)
+            else:
+                materials = [loot['lootId'], 'CURRENCY_champion']
+                post_recipe(connection, 'CHAMPION_upgrade', materials)
     raise LootRetrieveException
 
 
