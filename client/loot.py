@@ -1,6 +1,5 @@
-from logger import logger
-
 from .exceptions import LootRetrieveException
+from .logger import logger
 
 
 def get_loot(connection):

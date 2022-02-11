@@ -1,4 +1,4 @@
-from logger import logger
+from .logger import logger
 
 
 def get_champion_cost(champion_catalog, champion_id):

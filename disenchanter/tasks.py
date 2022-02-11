@@ -6,6 +6,7 @@ from threading import Thread
 from tkinter import messagebox
 
 from league_connection import LeagueConnection
+from league_connection.exceptions import LeagueConnectionError
 
 from client.exceptions import AccountBannedException
 from client.exceptions import AuthenticationFailureException
@@ -16,7 +17,6 @@ from client.exceptions import RegionMissingException
 from client.login import login
 from client.session import wait_session
 from client.username import check_username
-from logger import logger
 from process.league import kill_league_client
 from process.league import kill_riot_client
 from process.league import open_league_client
@@ -69,7 +69,7 @@ def execute_tasks_single_account(username, password, selected):
             kill_league_client()
             kill_riot_client()
             return False
-        except ClientException as exp:
+        except (ClientException, LeagueConnectionError) as exp:
             logger.error(f'{exp.__class__.__name__}. Retrying...')
             kill_league_client()
             kill_riot_client()

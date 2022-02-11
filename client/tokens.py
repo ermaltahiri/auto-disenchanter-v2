@@ -1,8 +1,7 @@
 import time
 
-from logger import logger
-
 from .exceptions import LootRetrieveException
+from .logger import logger
 from .loot import get_loot
 from .loot import get_loot_count
 from .recipes import post_recipe
