@@ -10,7 +10,7 @@ def disenchant(connection, retry_limit=10):
     logger.info('Disenchanting all champion shards...')
     for _ in range(retry_limit):
         try:
-            res_json = get_loot(logger, connection)
+            res_json = get_loot(connection)
         except LootRetrieveException:
             time.sleep(1)
             continue

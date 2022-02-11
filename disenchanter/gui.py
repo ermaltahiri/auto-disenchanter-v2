@@ -38,16 +38,17 @@ def create_config(frame, callbacks):
     return variables
 
 
-def create_checkboxes(frame, labels, entries_per_row=5):
+def create_checkboxes(frame, options, entries_per_row=5):
     variables = {}
-    for i, name in enumerate(labels):
+    for i, option in enumerate(options):
+        internal_name, display_name = option[:2]
         row = i // entries_per_row
         column = i % entries_per_row
         variable = tk.BooleanVar()
-        button = tk.Checkbutton(frame, variable=variable, text=name)
+        button = tk.Checkbutton(frame, variable=variable, text=display_name)
         tk.Grid.columnconfigure(frame, column, weight=1)
         button.grid(row=row, column=column, sticky='NSW')
-        variables[f'checkbox_{name}'] = variable
+        variables[f'checkbox_{internal_name}'] = variable
     return variables
 
 

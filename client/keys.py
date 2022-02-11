@@ -14,7 +14,7 @@ def forge_keys(connection, retry_limit=10):
             time.sleep(1)
             continue
         forgable_keys = get_key_fragment_count(loot_json) // 3
-        if forgable_keys > 0:
-            post_key_fragment_forge(connection, forgable_keys)
-            continue
+        if forgable_keys <= 0:
+            return
+        post_key_fragment_forge(connection, forgable_keys)
     raise LootRetrieveException

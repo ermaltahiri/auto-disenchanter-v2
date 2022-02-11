@@ -1,13 +1,12 @@
 import csv
 import os
-import time
 import traceback
 from tkinter import filedialog
 from tkinter import messagebox
 
 from .logger import logger
 from .persistence import atexit
-from .tasks import disenchant_task
+from .tasks import execute_tasks_in_background
 
 
 def on_browse(variables):
@@ -35,7 +34,7 @@ def on_start(variables):
         if accounts == []:
             logger.error('Empty file loaded.')
             return
-        disenchant_task(accounts, variables)
+        execute_tasks_in_background(accounts, variables)
     except UnicodeDecodeError:
         logger.error('Invalid input file.')
     except Exception:

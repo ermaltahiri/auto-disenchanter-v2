@@ -29,7 +29,7 @@ def redeem(connection, value, type, status):
         ]
         if loot_result == []:
             return
-        post_redeem(logger, connection, loot_result)
+        post_redeem(connection, loot_result)
     raise LootRetrieveException
 
 
@@ -38,6 +38,6 @@ def redeem_free(connection):
     redeem(connection, 0, 'CHAMPION', 'REDEEMABLE')
 
 
-def redeem_by_value(logger, connection, value):
+def redeem_by_value(connection, value):
     logger.info(f'Redeeming {value} BE shards...')
     redeem(connection, value, 'CHAMPION_RENTAL', 'REDEEMABLE_RENTAL')

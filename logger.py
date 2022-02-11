@@ -8,7 +8,7 @@ file_size = 1_048_576  # 1 MB
 fmt = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 date_fmt = '%m/%d/%Y %I:%M:%S %p'
 
-logger = logging.Logger('DISENC')
+logger = logging.Logger('<ROOT>')
 formatter = logging.Formatter(fmt, date_fmt)
 stream_handler = StreamHandler(sys.stdout)
 file_handler = RotatingFileHandler(file_path, maxBytes=file_size, backupCount=1)
