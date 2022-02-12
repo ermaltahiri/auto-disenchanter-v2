@@ -27,7 +27,7 @@ def setup_tkinter_handler(console):
 
 def main():
     '''Main function'''
-    load_dotenv()
+    load_dotenv('default.env')
     root, variables = get_gui({
         'title': 'Auto Disenchanter v2',
         'checkboxes': options,
