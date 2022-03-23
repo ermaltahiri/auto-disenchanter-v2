@@ -6,10 +6,11 @@ from dotenv import load_dotenv
 from client.logger import logger as client_logger
 from disenchanter.callbacks import on_browse
 from disenchanter.callbacks import on_start
+from disenchanter.entries import entries
+from disenchanter.entries import entries_internal_names
 from disenchanter.gui import get_gui
 from disenchanter.logger import logger as disenchanter_logger
-from disenchanter.options import options
-from disenchanter.options import options_internal_names
+from disenchanter.options import get_options
 from disenchanter.persistence import atexit
 from disenchanter.persistence import atstart
 from handlers import TkinterHandler
@@ -28,9 +29,11 @@ def setup_tkinter_handler(console):
 def main():
     '''Main function'''
     load_dotenv('default.env')
+    options, options_internal_names, _ = get_options()
     root, variables = get_gui({
         'title': 'Auto Disenchanter v2',
         'checkboxes': options,
+        'entries': entries,
         'entries_per_row': 3,
         'geometry': '800x600',
         'callbacks': {
@@ -39,8 +42,8 @@ def main():
         }
     })
     setup_tkinter_handler(variables['console'])
-    register(atexit, variables, options_internal_names)
-    atstart(variables, options_internal_names)
+    register(atexit, variables, options_internal_names, entries_internal_names)
+    atstart(variables, options_internal_names, entries_internal_names)
     root.mainloop()
 
 

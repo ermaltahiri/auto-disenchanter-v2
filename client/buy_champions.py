@@ -19,7 +19,7 @@ def post_buy(connection, item_id, price):
     return response.json()
 
 
-def buy_champions_by_id(connection, ids):
+def buy_champions_by_id(connection, ids, max_champs=999):
     response = connection.get('/lol-champions/v1/owned-champions-minimal')
     if response.ok:
         response = response.json()
@@ -30,6 +30,10 @@ def buy_champions_by_id(connection, ids):
             return True
         champion_catalog = catalog(connection, 'CHAMPION')
         for _ in range(60):
+            if len(champions_owned) >= max_champs:
+                logger.info('''Max no of champions already owned, '''
+                            f'''Max champs: {max_champs}, Champions owned: {len(champions_owned)}.''')
+                break
             if champions_to_buy == []:
                 logger.info('All champions are already purchased.')
                 return True
@@ -42,7 +46,7 @@ def buy_champions_by_id(connection, ids):
             logger.info(f'Buying champion: {name}...')
             errors = post_buy(connection, champion, cost)
             if errors is None:
-                champions_to_buy.pop(0)
+                champions_owned.append(champions_to_buy.pop(0))
                 continue
             logger.error(errors)
             if not isinstance(errors, dict):
@@ -71,7 +75,8 @@ def buy_champions_by_id(connection, ids):
         logger.info(f'Res: {response.status_code}, {response.content}')
 
 
-def buy_champions_by_cost(connection, cost):
+def buy_champions_by_cost(connection, cost, max_champs=999):
     champion_catalog = catalog(connection, 'CHAMPION')
     ids = get_champions_by_cost(champion_catalog, cost)
-    buy_champions_by_id(connection, ids)
+    logger.info(f'Buying {cost} BE champions...')
+    buy_champions_by_id(connection, ids, max_champs)

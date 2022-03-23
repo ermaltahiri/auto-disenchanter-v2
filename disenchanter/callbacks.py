@@ -13,7 +13,7 @@ def on_browse(variables):
     file = filedialog.askopenfilename()
     if file:
         variables['input_path'].set(file)
-        atexit(variables, [])  # save persistence data
+        atexit(variables, [], [])  # save persistence data
 
 
 def on_start(variables):

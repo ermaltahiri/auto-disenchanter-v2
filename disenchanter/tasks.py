@@ -22,9 +22,10 @@ from process.league import kill_riot_client
 from process.league import open_league_client
 from process.league import open_riot_client
 
+from .entries import entries_internal_names
+from .entries import get_config_from_entries
 from .logger import logger
-from .options import options_internal_names
-from .options import options_mapped
+from .options import get_options
 
 SKIP_ACCOUNT_EXCEPTIONS = (
     AccountBannedException,
@@ -35,7 +36,7 @@ SKIP_ACCOUNT_EXCEPTIONS = (
 )
 
 
-def execute(connection, selected):
+def execute(connection, selected, options_mapped):
     for option in selected:
         _, display_name, data = options_mapped[option]
         logger.info(f'Current task: {display_name}')
@@ -44,7 +45,7 @@ def execute(connection, selected):
         func(*args, **kwargs)
 
 
-def execute_tasks_single_account(username, password, selected):
+def execute_tasks_single_account(username, password, selected, options_mapped):
     while True:
         try:
             open_riot_client(os.environ['RIOT_CLIENT_SERVICES'])
@@ -59,7 +60,7 @@ def execute_tasks_single_account(username, password, selected):
             league_connection = LeagueConnection(lockfile)
             wait_session(league_connection)
             check_username(league_connection, username)
-            execute(league_connection, selected)
+            execute(league_connection, selected, options_mapped)
             logger.info('Logging out...')
             kill_league_client()
             kill_riot_client()
@@ -81,6 +82,10 @@ def execute_tasks(accounts, variables):
         variables['start_button']['state'] = 'disabled'
         variables['input_path_entry']['state'] = 'disabled'
         selected = []
+        config = get_config_from_entries(variables)
+        if config is None:
+            return
+        _, options_internal_names, options_mapped = get_options(config)
         for option in options_internal_names:
             if variables[f'checkbox_{option}'].get():
                 selected.append(option)
@@ -91,7 +96,7 @@ def execute_tasks(accounts, variables):
             variables['status'].set(f'{progress}% completed ({i}/{total}).')
             username, password = account
             logger.info(f'Working on account {username}...')
-            execute_tasks_single_account(username, password, selected)
+            execute_tasks_single_account(username, password, selected, options_mapped)
         variables['status'].set(f'100% completed ({total}/{total}).')
         logger.info('Done.')
     except Exception:
