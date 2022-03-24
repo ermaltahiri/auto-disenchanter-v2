@@ -1,4 +1,5 @@
 import json
+import time
 
 import requests
 
@@ -47,11 +48,19 @@ def _reroll_skins(connection, skins, repeat=1):
     if res.ok:
         res_json = res.json()
         try:
-            new_skin = res_json['added'][0]['playerLoot']
+            new_skin = res_json['added']
+            if new_skin == []:
+                new_skin = res_json['redeemed']
             logger.info(
                 f'Skin received after rerolling: {new_skin.get("itemDesc")}, Rarity: {new_skin.get("rarity")}')
+            return True
         except IndexError:
-            pass
+            logger.info(f'Did not receive skin when rerolling: {res_json}')
+            return False
+    else:
+        logger.info(
+            f'Error when rerolling skins: Status: {res.status_code}, content: {res.content}')
+        return False
 
 
 def get_rerollable_skins(connection):
@@ -67,10 +76,16 @@ def get_rerollable_skins(connection):
         return None
 
 
-def reroll_skins(connection):
+def reroll_skins(connection, retry_limit=20):
+    retries = 0
     while True:
+        if retries >= retry_limit:
+            logger.info('Retry limit exceeded when rerolling skins.')
+            break
         rerollable_skins = get_rerollable_skins(connection)
         if len(rerollable_skins) < 3:
             logger.info('Cannot reroll skins anymore.')
             break
-        _reroll_skins(connection, rerollable_skins[:3])
+        if not _reroll_skins(connection, rerollable_skins[:3]):
+            retries += 1
+        time.sleep(1)
