@@ -2,19 +2,38 @@ import json
 
 import requests
 
+from .exceptions import LootRetrieveException
+from .inventory import get_inventory_by_type
 from .logger import logger
 from .loot import get_loot
+from .loot import get_loot_by_id
+
+
+def get_skin_rarity(connection, skin):
+    skin_id = f'CHAMPION_SKIN_{skin["itemId"]}'
+    loot_data = get_loot_by_id(connection, skin_id)
+    if loot_data is None:
+        raise LootRetrieveException
+    return loot_data.get('rarity')
 
 
 def get_mythic_skins_count(connection):
     try:
         loot_data = get_loot(connection)
-        mythic_count = len([
+        mythic_loot_skins_count = len([
             l for l in loot_data
             if l['lootId'].startswith('CHAMPION_SKIN_') and
             l['rarity'] == 'MYTHIC'])
-        logger.info(f'Mythic skin shards count: {mythic_count}')
-        return mythic_count
+        mythic_inventory_skins_count = 0
+
+        inventory_skins = get_inventory_by_type(connection, 'CHAMPION_SKIN')
+        for skin in inventory_skins:
+            if get_skin_rarity(connection, skin) == 'MYTHIC':
+                mythic_inventory_skins_count += 1
+        mythic_skins_count = mythic_loot_skins_count + mythic_inventory_skins_count
+        logger.info(f'''Mythic skins count: Loot: {mythic_loot_skins_count}, '''
+                    f'''Inventory: {mythic_inventory_skins_count}, Total: {mythic_skins_count}''')
+        return mythic_skins_count
     except (json.decoder.JSONDecodeError, requests.exceptions.RequestException):
         return None
 

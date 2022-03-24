@@ -11,6 +11,12 @@ def get_loot(connection):
     return res_json
 
 
+def get_loot_by_id(connection, loot_id):
+    res = connection.get(f'/lol-loot/v1/player-loot/{loot_id}')
+    if res.ok:
+        return res.json()
+
+
 def get_loot_count(loot_json, lood_id):
     loot = [l for l in loot_json if l['lootId'] == lood_id]
     if loot == []:
