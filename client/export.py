@@ -18,10 +18,14 @@ def export_account(account, output_file):
         logger.error(f'{exp.__class__.__name__}. Cannot export account.')
 
 
-def export_level_and_mythic_count(connection, account, output_file):
+def export_level_and_mythic_count(connection, account, output_file, retry_limit=10):
     logger.info('Fetching level and mythic count...')
+    retries = 0
     while 'level' not in account or 'mythic_count' not in account:
         try:
+            if retries >= retry_limit:
+                logger.info('Retry limit exceeded.')
+                account['mythic_count'] = 0
             if 'level' not in account:
                 level = get_level(connection)
                 if level == -1:
@@ -35,5 +39,6 @@ def export_level_and_mythic_count(connection, account, output_file):
                     continue
                 account['mythic_count'] = mythic_count
         except LootRetrieveException:
+            retries += 1
             time.sleep(1)
     export_account(account, output_file)
