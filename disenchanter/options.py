@@ -8,6 +8,7 @@ from client.icon import change_icon
 from client.keys import forge_keys
 from client.redeem import redeem_by_value
 from client.redeem import redeem_free
+from client.skins import reroll_skins
 from client.tokens import forge_tokens_into_champion_shards
 
 
@@ -39,6 +40,7 @@ def get_options(config=None):
         ['buy_6300', 'Buy 6300BE champs', (buy_champions_by_cost, [6300], {
                                            'max_champs': max_champs})],  # tested
         ['change_icon', 'Change icon to plant', (change_icon, [23], {})],  # tested
+        ['reroll_skins', 'Reroll skins', (reroll_skins, [], {})],  # tested
         ['export_level_and_mythic_count', 'Export level and mythic count',
             (export_level_and_mythic_count, [], {'account': {}, 'output_file': output_file})],  # tested
     ]
