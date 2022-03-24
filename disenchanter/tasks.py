@@ -36,12 +36,19 @@ SKIP_ACCOUNT_EXCEPTIONS = (
 )
 
 
-def execute(connection, selected, options_mapped):
+def execute(connection, username, password, selected, options_mapped):
     for option in selected:
         _, display_name, data = options_mapped[option]
         logger.info(f'Current task: {display_name}')
         func, args, kwargs = data
         func = partial(func, connection)
+
+        # Send account if in kwargs
+        if 'account' in kwargs:
+            kwargs['account'] = {
+                'username': username,
+                'password': password
+            }
         func(*args, **kwargs)
 
 
@@ -60,7 +67,7 @@ def execute_tasks_single_account(username, password, selected, options_mapped):
             league_connection = LeagueConnection(lockfile)
             wait_session(league_connection)
             check_username(league_connection, username)
-            execute(league_connection, selected, options_mapped)
+            execute(league_connection, username, password, selected, options_mapped)
             logger.info('Logging out...')
             kill_league_client()
             kill_riot_client()

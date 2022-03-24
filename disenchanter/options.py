@@ -3,6 +3,7 @@ from client.capsules import open_champion_capsules
 from client.chests import open_generic_chests
 from client.chests import open_masterwork_chests
 from client.disenchant import disenchant
+from client.export import export_level_and_mythic_count
 from client.icon import change_icon
 from client.keys import forge_keys
 from client.redeem import redeem_by_value
@@ -12,6 +13,7 @@ from client.tokens import forge_tokens_into_champion_shards
 
 def get_options(config=None):
     max_champs = 999 if config is None else config['max_champs']
+    output_file = None if config is None else config['output_file']
     options = [
         ['forge_keys', 'Forge keys', (forge_keys, [], {})],
         ['open_champion_capsules', 'Open champion capsules', (open_champion_capsules, [], {})],
@@ -37,6 +39,8 @@ def get_options(config=None):
         ['buy_6300', 'Buy 6300BE champs', (buy_champions_by_cost, [6300], {
                                            'max_champs': max_champs})],  # tested
         ['change_icon', 'Change icon to plant', (change_icon, [23], {})],  # tested
+        ['export_level_and_mythic_count', 'Export level and mythic count',
+            (export_level_and_mythic_count, [], {'account': {}, 'output_file': output_file})],  # tested
     ]
     options_internal_names = [o[0] for o in options]
     options_mapped = {o[0]: o for o in options}
