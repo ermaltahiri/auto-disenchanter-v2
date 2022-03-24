@@ -5,8 +5,15 @@ from tkinter import messagebox
 
 from .logger import logger
 
+
+def parse_max_champs(value):
+    if value == '':
+        return 9999
+    return int(value)
+
+
 entries = [
-    ['max_champs', 'Max Champions', int]
+    ['max_champs', 'Max Champions', parse_max_champs]
 ]
 entries_internal_names = [e[0] for e in entries]
 entries_mapped = {e[0]: e for e in entries}
