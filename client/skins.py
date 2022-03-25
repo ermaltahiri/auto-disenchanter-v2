@@ -48,11 +48,16 @@ def _reroll_skins(connection, skins, repeat=1):
     if res.ok:
         res_json = res.json()
         try:
-            new_skin = res_json['added']
-            if new_skin == []:
-                new_skin = res_json['redeemed']
-            logger.info(
-                f'Skin received after rerolling: {new_skin.get("itemDesc")}, Rarity: {new_skin.get("rarity")}')
+            new_skins = res_json['added']
+            if new_skins == []:
+                new_skins = res_json['redeemed']
+            for skin in new_skins:
+                skin = skin.get('playerLoot')
+                if skin is None:
+                    continue
+                desc = skin.get('itemDesc')
+                rarity = skin.get('rarity')
+                logger.info(f'Loot recieved after rerolling: {desc}, Rarity: {rarity}')
             return True
         except IndexError:
             logger.info(f'Did not receive skin when rerolling: {res_json}')
