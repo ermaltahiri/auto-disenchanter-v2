@@ -1,3 +1,4 @@
+import os
 import subprocess
 import time
 
@@ -36,3 +37,10 @@ def kill_riot_client():
     kill_process('RiotClientCrashHandler.exe')
     kill_process('RiotClientUx.exe')
     kill_process('RiotClientUxRender.exe')
+
+
+def remove_lockfile(lockfile):
+    try:
+        os.remove(lockfile)
+    except OSError:
+        pass

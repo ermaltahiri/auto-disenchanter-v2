@@ -1,10 +1,10 @@
-
 import os
 import traceback
 from functools import partial
 from threading import Thread
 from tkinter import messagebox
 
+import requests
 from league_connection import LeagueConnection
 from league_connection.exceptions import LeagueConnectionError
 
@@ -21,8 +21,8 @@ from process.league import kill_league_client
 from process.league import kill_riot_client
 from process.league import open_league_client
 from process.league import open_riot_client
+from process.league import remove_lockfile
 
-from .entries import entries_internal_names
 from .entries import get_config_from_entries
 from .logger import logger
 from .options import get_options
@@ -53,34 +53,39 @@ def execute(connection, username, password, selected, options_mapped):
 
 
 def execute_tasks_single_account(username, password, selected, options_mapped):
+    riot_lockfile = os.path.expanduser(os.environ['RIOT_CLIENT_LOCKFILE'])
+    lockfile_dir = os.path.dirname(os.environ['LEAGUE_CLIENT'])
+    league_lockfile = os.path.join(lockfile_dir, 'lockfile')
     while True:
         try:
             open_riot_client(os.environ['RIOT_CLIENT_SERVICES'])
-            lockfile = os.path.expanduser(os.environ['RIOT_CLIENT_LOCKFILE'])
             logger.info('Getting riot client connection...')
-            riot_connection = LeagueConnection(lockfile)
+            riot_connection = LeagueConnection(riot_lockfile)
             login(riot_connection, username, password)
             open_league_client(os.environ['LEAGUE_CLIENT'])
-            lockfile_dir = os.path.dirname(os.environ['LEAGUE_CLIENT'])
-            lockfile = os.path.join(lockfile_dir, 'lockfile')
             logger.info('Getting league client connection...')
-            league_connection = LeagueConnection(lockfile)
+            league_connection = LeagueConnection(league_lockfile)
             wait_session(league_connection)
             check_username(league_connection, username)
             execute(league_connection, username, password, selected, options_mapped)
             logger.info('Logging out...')
             kill_league_client()
             kill_riot_client()
+            remove_lockfile(league_lockfile)
             return True
+        except requests.RequestException as exp:
+            logger.error(f'{exp.__class__.__name__}. Retrying...')
         except SKIP_ACCOUNT_EXCEPTIONS as exp:
             logger.error(f'{exp.__class__.__name__}. Skipping account...')
             kill_league_client()
             kill_riot_client()
+            remove_lockfile(league_lockfile)
             return False
         except (ClientException, LeagueConnectionError) as exp:
             logger.error(f'{exp.__class__.__name__}. Retrying...')
             kill_league_client()
             kill_riot_client()
+            remove_lockfile(league_lockfile)
 
 
 def execute_tasks(accounts, variables):
