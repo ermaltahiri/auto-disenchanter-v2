@@ -3,7 +3,7 @@ from client.capsules import open_champion_capsules
 from client.chests import open_generic_chests
 from client.chests import open_masterwork_chests
 from client.disenchant import disenchant
-from client.export import export_level_and_mythic_count
+from client.export import export_info
 from client.icon import change_icon
 from client.keys import forge_keys
 from client.redeem import redeem_by_value
@@ -41,8 +41,8 @@ def get_options(config=None):
                                            'max_champs': max_champs})],  # tested
         ['change_icon', 'Change icon to plant', (change_icon, [23], {})],  # tested
         ['reroll_skins', 'Reroll skins', (reroll_skins, [], {})],  # tested
-        ['export_level_and_mythic_count', 'Export level and mythic count',
-            (export_level_and_mythic_count, [], {'account': {}, 'output_file': output_file})],  # tested
+        ['export_info', 'Export info',
+            (export_info, [], {'account': {}, 'output_file': output_file})],
     ]
     options_internal_names = [o[0] for o in options]
     options_mapped = {o[0]: o for o in options}
