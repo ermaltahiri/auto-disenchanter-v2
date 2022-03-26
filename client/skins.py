@@ -81,18 +81,35 @@ def get_rerollable_skins(connection, include_permanent=True):
         return None
 
 
+def get_is_skin_new(catalog, skin_id, threshold=15_552_000):  # 6 months
+    skin = [c for c in catalog if c['itemId'] == skin_id]
+    if skin == []:
+        return False
+    skin = skin[0]
+    if time.time() - skin['releaseDate'] < threshold:
+        print(skin)
+    return time.time() - skin['releaseDate'] < threshold
+
+
 def reroll_skins(connection, include_permanent=True, whitelisted_skins=None, retry_limit=20):
     retries = 0
     if whitelisted_skins is None:
         whitelisted_skins = []
+    res = connection.get('/lol-catalog/v1/items/CHAMPION_SKIN')
+    catalog = res.json() if res.ok else []
     while True:
         if retries >= retry_limit:
             logger.info('Retry limit exceeded when rerolling skins.')
             break
         rerollable_skins = get_rerollable_skins(connection, include_permanent)
+        logger.info(f'Rerollable skin count: {len(rerollable_skins)}')
         rerollable_skins = [
             s for s in rerollable_skins if s['storeItemId'] not in whitelisted_skins]
-        logger.info(f'Rerollable skin count: {len(rerollable_skins)}')
+        logger.info(
+            f'Rerollable skin count (no high-value skins): {len(rerollable_skins)}')
+        rerollable_skins = [
+            s for s in rerollable_skins if not get_is_skin_new(catalog, s['storeItemId'])]
+        logger.info(f'Rerollable skin count (no new skins): {len(rerollable_skins)}')
         if len(rerollable_skins) < 3:
             logger.info('Cannot reroll skins anymore.')
             break
