@@ -65,6 +65,7 @@ def execute_tasks_single_account(username, password, selected, options_mapped):
             open_league_client(os.environ['LEAGUE_CLIENT'])
             logger.info('Getting league client connection...')
             league_connection = LeagueConnection(league_lockfile)
+            league_connection.post('/riotclient/kill-ux')
             wait_session(league_connection)
             check_username(league_connection, username)
             execute(league_connection, selected, options_mapped)
