@@ -1,6 +1,5 @@
 
 
-from datetime import datetime
 from tkinter import messagebox
 
 from .logger import logger
@@ -29,7 +28,4 @@ def get_config_from_entries(variables):
             logger.error(f'Invalid value set for entry: {display_name}.')
             messagebox.showerror('Error', f'Invalid value set for entry: {display_name}.')
             return None
-    now = datetime.now().strftime("%Y-%b-%d %H-%M-%S").lower()
-    output_file = f'output_{now}.txt'
-    config['output_file'] = output_file
     return config

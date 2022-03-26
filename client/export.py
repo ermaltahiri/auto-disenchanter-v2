@@ -20,70 +20,51 @@ def export_account(account, output_file):
         with open(output_file, 'a+', newline='') as file_pointer:
             writer = csv.writer(file_pointer, delimiter=':')
             writer.writerow([
-                account['region'],
-                account['username'],
-                account['password'],
-                account['level'],
-                account['mythic_count'],
-                account['be'],
-                account['oe'],
-                account['rental'],
-                account['perma'],
-                account['inventory'],
+                account.get('region', 'null'),
+                account.get('username', 'null'),
+                account.get('password', 'null'),
+                account.get('level', 'null'),
+                account.get('mythic_count', 'null'),
+                account.get('be', 'null'),
+                account.get('oe', 'null'),
+                account.get('rental', 'null'),
+                account.get('perma', 'null'),
+                account.get('inventory', 'null'),
             ])
     except OSError as exp:
         logger.error(f'{exp.__class__.__name__}. Cannot export account.')
 
 
-def export_info(connection, account, output_file, retry_limit=10):
+def add_info_to_account(connection, account, retry_limit=120):
     logger.info('Fetching account info...')
-    retries = 0
+    start_time = time.time()
     while True:
         try:
-            done = (
-                'level' in account and
-                'mythic_count' in account and
-                'be' in account and
-                'oe' in account and
-                'rental' in account and
-                'perma' in account and
-                'inventory' in account and
-                'region' in account
-            )
-            if done:
-                break
-            if retries >= retry_limit:
+            if time.time() - start_time >= retry_limit:
                 logger.info('Retry limit exceeded.')
-                account['mythic_count'] = 0
-            if 'level' not in account:
-                level = get_level(connection)
-                if level == -1:
-                    time.sleep(1)
-                    continue
-                account['level'] = level
-            if 'mythic_count' not in account:
-                mythic_count = get_mythic_skins_count(connection)
-                if mythic_count is None:
-                    time.sleep(1)
-                    continue
-                account['mythic_count'] = mythic_count
+                return account
+
+            account['level'] = get_level(connection)
+            if account['level'] == -1:
+                time.sleep(1)
+                continue
+
+            account['mythic_count'] = get_mythic_skins_count(connection)
+            if account['mythic_count'] is None:
+                time.sleep(1)
+                continue
+
             loot = get_loot(connection)
-            if 'be' not in account:
-                account['be'] = get_loot_count(loot, 'CURRENCY_champion')
-            if 'oe' not in account:
-                account['oe'] = get_loot_count(loot, 'CURRENCY_cosmetic')
-            if 'rental' not in account:
-                ids = get_rental_shard_ids(connection)
-                account['rental'] = ','.join(str(i) for i in ids)
-            if 'perma' not in account:
-                ids = get_permanent_shard_ids(connection)
-                account['perma'] = ','.join(str(i) for i in ids)
-            if 'inventory' not in account:
-                inventory_skins = get_inventory_by_type(connection, 'CHAMPION_SKIN')
-                account['inventory'] = ','.join(str(i['itemId']) for i in inventory_skins)
-            if 'region' not in account:
-                account['region'] = get_region_locale(connection).get('region')
+            account['be'] = get_loot_count(loot, 'CURRENCY_champion')
+            account['oe'] = get_loot_count(loot, 'CURRENCY_cosmetic')
+            ids = get_rental_shard_ids(connection)
+            account['rental'] = ','.join(str(i) for i in ids)
+            ids = get_permanent_shard_ids(connection)
+            account['perma'] = ','.join(str(i) for i in ids)
+            inventory_skins = get_inventory_by_type(connection, 'CHAMPION_SKIN')
+            account['inventory'] = ','.join(str(i['itemId']) for i in inventory_skins)
+            account['region'] = get_region_locale(connection).get('region')
+            break
         except LootRetrieveException:
-            retries += 1
             time.sleep(1)
-    export_account(account, output_file)
+    return account

@@ -3,7 +3,6 @@ from client.capsules import open_champion_capsules
 from client.chests import open_generic_chests
 from client.chests import open_masterwork_chests
 from client.disenchant import disenchant
-from client.export import export_info
 from client.icon import change_icon
 from client.keys import forge_keys
 from client.redeem import redeem_by_value
@@ -14,7 +13,6 @@ from client.tokens import forge_tokens_into_champion_shards
 
 def get_options(config=None):
     max_champs = 999 if config is None else config['max_champs']
-    output_file = None if config is None else config['output_file']
     options = [
         ['forge_keys', 'Forge keys', (forge_keys, [], {})],
         ['open_champion_capsules', 'Open champion capsules', (open_champion_capsules, [], {})],
@@ -43,8 +41,6 @@ def get_options(config=None):
         ['reroll_skins', 'Reroll skins', (reroll_skins, [], {})],  # tested
         ['reroll_skins_no_perma', 'Reroll skins (Ignore perma shards)',
          (reroll_skins, [False], {})],  # tested
-        ['export_info', 'Export info',
-            (export_info, [], {'account': {}, 'output_file': output_file})],
     ]
     options_internal_names = [o[0] for o in options]
     options_mapped = {o[0]: o for o in options}

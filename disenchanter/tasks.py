@@ -1,5 +1,6 @@
 import os
 import traceback
+from datetime import datetime
 from functools import partial
 from threading import Thread
 from tkinter import messagebox
@@ -14,6 +15,8 @@ from client.exceptions import ClientException
 from client.exceptions import ConsentRequiredException
 from client.exceptions import NameChangeRequiredException
 from client.exceptions import RegionMissingException
+from client.export import add_info_to_account
+from client.export import export_account
 from client.login import login
 from client.session import wait_session
 from client.username import check_username
@@ -35,24 +38,21 @@ SKIP_ACCOUNT_EXCEPTIONS = (
     RegionMissingException,
 )
 
+now = datetime.now().strftime("%Y-%b-%d %H-%M-%S").lower()
+output_file = f'output_{now}.txt'
 
-def execute(connection, username, password, selected, options_mapped):
+
+def execute(connection, selected, options_mapped):
     for option in selected:
         _, display_name, data = options_mapped[option]
         logger.info(f'Current task: {display_name}')
         func, args, kwargs = data
         func = partial(func, connection)
-
-        # Send account if in kwargs
-        if 'account' in kwargs:
-            kwargs['account'] = {
-                'username': username,
-                'password': password
-            }
         func(*args, **kwargs)
 
 
 def execute_tasks_single_account(username, password, selected, options_mapped):
+    account = {'username': username, 'password': password}
     riot_lockfile = os.path.expanduser(os.environ['RIOT_CLIENT_LOCKFILE'])
     lockfile_dir = os.path.dirname(os.environ['LEAGUE_CLIENT'])
     league_lockfile = os.path.join(lockfile_dir, 'lockfile')
@@ -67,7 +67,9 @@ def execute_tasks_single_account(username, password, selected, options_mapped):
             league_connection = LeagueConnection(league_lockfile)
             wait_session(league_connection)
             check_username(league_connection, username)
-            execute(league_connection, username, password, selected, options_mapped)
+            execute(league_connection, selected, options_mapped)
+            add_info_to_account(league_connection, account)
+            export_account(account, output_file)
             logger.info('Logging out...')
             kill_league_client()
             kill_riot_client()
@@ -80,6 +82,7 @@ def execute_tasks_single_account(username, password, selected, options_mapped):
             kill_league_client()
             kill_riot_client()
             remove_lockfile(league_lockfile)
+            export_account(account, output_file)
             return False
         except (ClientException, LeagueConnectionError) as exp:
             logger.error(f'{exp.__class__.__name__}. Retrying...')
