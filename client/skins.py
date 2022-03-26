@@ -68,11 +68,12 @@ def _reroll_skins(connection, skins, repeat=1):
         return False
 
 
-def get_rerollable_skins(connection):
+def get_rerollable_skins(connection, include_permanent=True):
     try:
+        starts = 'CHAMPION_SKIN_' if include_permanent else 'CHAMPION_SKIN_RENTAL_'
         loot_data = get_loot(connection)
         rerollable_skins = [l for l in loot_data
-                            if l['lootId'].startswith('CHAMPION_SKIN_') and
+                            if l['lootId'].startswith(starts) and
                             l['rarity'] not in ['MYTHIC', 'ULTIMATE', 'LEGENDARY']]
         logger.info(f'Rerollable skin count: {len(rerollable_skins)}')
         rerollable_skins.sort(key=lambda x: x['disenchantValue'])
@@ -81,13 +82,13 @@ def get_rerollable_skins(connection):
         return None
 
 
-def reroll_skins(connection, retry_limit=20):
+def reroll_skins(connection, include_permanent=True, retry_limit=20):
     retries = 0
     while True:
         if retries >= retry_limit:
             logger.info('Retry limit exceeded when rerolling skins.')
             break
-        rerollable_skins = get_rerollable_skins(connection)
+        rerollable_skins = get_rerollable_skins(connection, include_permanent)
         if len(rerollable_skins) < 3:
             logger.info('Cannot reroll skins anymore.')
             break

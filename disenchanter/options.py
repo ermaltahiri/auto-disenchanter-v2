@@ -41,6 +41,8 @@ def get_options(config=None):
                                            'max_champs': max_champs})],  # tested
         ['change_icon', 'Change icon to plant', (change_icon, [23], {})],  # tested
         ['reroll_skins', 'Reroll skins', (reroll_skins, [], {})],  # tested
+        ['reroll_skins_no_perma', 'Reroll skins (Ignore perma shards)',
+         (reroll_skins, [False], {})],  # tested
         ['export_info', 'Export info',
             (export_info, [], {'account': {}, 'output_file': output_file})],
     ]
