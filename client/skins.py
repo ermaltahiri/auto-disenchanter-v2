@@ -75,20 +75,24 @@ def get_rerollable_skins(connection, include_permanent=True):
         rerollable_skins = [l for l in loot_data
                             if l['lootId'].startswith(starts) and
                             l['rarity'] not in ['MYTHIC', 'ULTIMATE', 'LEGENDARY']]
-        logger.info(f'Rerollable skin count: {len(rerollable_skins)}')
         rerollable_skins.sort(key=lambda x: x['disenchantValue'])
         return rerollable_skins
     except (json.decoder.JSONDecodeError, requests.exceptions.RequestException):
         return None
 
 
-def reroll_skins(connection, include_permanent=True, retry_limit=20):
+def reroll_skins(connection, include_permanent=True, whitelisted_skins=None, retry_limit=20):
     retries = 0
+    if whitelisted_skins is None:
+        whitelisted_skins = []
     while True:
         if retries >= retry_limit:
             logger.info('Retry limit exceeded when rerolling skins.')
             break
         rerollable_skins = get_rerollable_skins(connection, include_permanent)
+        rerollable_skins = [
+            s for s in rerollable_skins if s['storeItemId'] not in whitelisted_skins]
+        logger.info(f'Rerollable skin count: {len(rerollable_skins)}')
         if len(rerollable_skins) < 3:
             logger.info('Cannot reroll skins anymore.')
             break

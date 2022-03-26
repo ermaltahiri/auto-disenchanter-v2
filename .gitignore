@@ -155,3 +155,4 @@ cython_debug/
 catalog.json
 state.json
 output*.txt
+sandbox.py

@@ -1,3 +1,6 @@
+import json
+from functools import lru_cache
+
 from client.buy_champions import buy_champions_by_cost
 from client.capsules import open_champion_capsules
 from client.chests import open_generic_chests
@@ -11,8 +14,15 @@ from client.skins import reroll_skins
 from client.tokens import forge_tokens_into_champion_shards
 
 
+@lru_cache()
+def get_whitelisted_skins():
+    with open('whitelisted_skins.json') as fp:
+        return json.load(fp)
+
+
 def get_options(config=None):
     max_champs = 999 if config is None else config['max_champs']
+    whitelisted_skins = get_whitelisted_skins()
     options = [
         ['forge_keys', 'Forge keys', (forge_keys, [], {})],
         ['open_champion_capsules', 'Open champion capsules', (open_champion_capsules, [], {})],
@@ -38,9 +48,9 @@ def get_options(config=None):
         ['buy_6300', 'Buy 6300BE champs', (buy_champions_by_cost, [6300], {
                                            'max_champs': max_champs})],  # tested
         ['change_icon', 'Change icon to plant', (change_icon, [23], {})],  # tested
-        ['reroll_skins', 'Reroll skins', (reroll_skins, [], {})],  # tested
+        ['reroll_skins', 'Reroll skins', (reroll_skins, [True, whitelisted_skins], {})],  # tested
         ['reroll_skins_no_perma', 'Reroll skins (Ignore perma shards)',
-         (reroll_skins, [False], {})],  # tested
+         (reroll_skins, [False, whitelisted_skins], {})],  # tested
     ]
     options_internal_names = [o[0] for o in options]
     options_mapped = {o[0]: o for o in options}
