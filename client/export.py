@@ -3,6 +3,7 @@ import time
 
 from client.exceptions import LootRetrieveException
 
+from .inventory import get_inventory_by_type
 from .logger import logger
 from .loot import get_loot
 from .loot import get_loot_count
@@ -28,6 +29,7 @@ def export_account(account, output_file):
                 account['oe'],
                 account['rental'],
                 account['perma'],
+                account['inventory'],
             ])
     except OSError as exp:
         logger.error(f'{exp.__class__.__name__}. Cannot export account.')
@@ -45,6 +47,7 @@ def export_info(connection, account, output_file, retry_limit=10):
                 'oe' in account and
                 'rental' in account and
                 'perma' in account and
+                'inventory' in account and
                 'region' in account
             )
             if done:
@@ -75,6 +78,9 @@ def export_info(connection, account, output_file, retry_limit=10):
             if 'perma' not in account:
                 ids = get_permanent_shard_ids(connection)
                 account['perma'] = ','.join(str(i) for i in ids)
+            if 'inventory' not in account:
+                inventory_skins = get_inventory_by_type(connection, 'CHAMPION_SKIN')
+                account['inventory'] = ','.join(str(i['itemId']) for i in inventory_skins)
             if 'region' not in account:
                 account['region'] = get_region_locale(connection).get('region')
         except LootRetrieveException:
