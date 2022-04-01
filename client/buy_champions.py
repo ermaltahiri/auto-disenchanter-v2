@@ -19,11 +19,13 @@ def post_buy(connection, item_id, price):
     return response.json()
 
 
-def buy_champions_by_id(connection, ids, max_champs=999):
+def buy_champions_by_id(connection, ids, max_champs=999, retry=10):
+    if retry <= 0:
+        return False
     response = connection.get('/lol-champions/v1/owned-champions-minimal')
     if response.ok:
         response = response.json()
-        champions_owned = [str(c['id']) for c in response]
+        champions_owned = [str(c['id']) for c in response if c['ownership']['owned']]
         champions_to_buy = [c for c in ids if str(c) not in champions_owned]
         if champions_to_buy == []:
             logger.info('All champions are already purchased.')
@@ -71,8 +73,11 @@ def buy_champions_by_id(connection, ids, max_champs=999):
             logger.error(errors)
             time.sleep(10)
     else:
-        logger.info('DEBUG: Cannot fetch owned champions')
+        logger.debug('Cannot fetch owned champions')
         logger.info(f'Res: {response.status_code}, {response.content}')
+        if response.status_code == 404:
+            time.sleep(1)
+            return buy_champions_by_id(connection, ids, max_champs, retry - 1)
 
 
 def buy_champions_by_cost(connection, cost, max_champs=999):
